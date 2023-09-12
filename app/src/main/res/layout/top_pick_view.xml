@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="280dp"
+    android:layout_height="match_parent"
+    android:layout_marginRight="32dp"
+    android:background="@android:color/transparent">
+
+    <TextView
+        android:id="@+id/tvPickName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginVertical="6dp"
+        android:textColor="@color/silver"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Made for you" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardPickAlbum"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="20dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvPickName">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <ImageView
+                android:id="@+id/pickImageAlbum"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:contentDescription="album"
+                android:scaleType="centerCrop"
+                app:layout_constraintBottom_toBottomOf="@id/pickBottomCard"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:src="@drawable/album_demo" />
+
+            <RelativeLayout
+                android:id="@+id/pickBottomCard"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:background="@color/cardview_dark_background"
+                app:layout_constraintBottom_toBottomOf="parent">
+
+                <TextView
+                    android:id="@+id/pickTextBottomCard"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:background="@android:color/transparent"
+                    android:ellipsize="marquee"
+                    android:gravity="center"
+                    android:textAlignment="center"
+                    android:textColor="@color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    tools:text="The Return/Of Me - EP Pryda 2023"></TextView>
+            </RelativeLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

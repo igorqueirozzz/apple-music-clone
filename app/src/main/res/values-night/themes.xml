@@ -1,0 +1,13 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Base.Theme.AppleMusic" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primaryColorLightTheme</item>
+        <item name="colorAccent">@color/accentColorLightTheme</item>
+        <item name="android:background">@color/black</item>
+        <item name="android:colorBackground">@color/black</item>
+        <item name="android:actionBarStyle">@style/MyActionBar</item>
+    </style>
+    <style name="MyActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
+        <item name="android:background">@color/black</item>
+    </style>
+</resources>

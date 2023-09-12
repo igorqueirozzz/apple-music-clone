@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingHorizontal="16dp"
+    android:paddingTop="8dp"
+    tools:context=".ui.search.SearchFragment">
+
+    <TextView
+        android:id="@+id/tvSearch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/search"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/logo_person"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/ic_circle_person"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?attr/colorPrimary" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/textInputLayoutSearch"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_marginVertical="16dp"
+        app:boxBackgroundColor="@color/smoke"
+        app:boxCornerRadiusBottomEnd="10dp"
+        app:boxCornerRadiusBottomStart="10dp"
+        app:boxCornerRadiusTopEnd="10dp"
+        app:boxCornerRadiusTopStart="10dp"
+        app:layout_constraintBottom_toTopOf="@id/recyclerSearchSongs"
+        app:layout_constraintTop_toBottomOf="@id/tvSearch">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/textInputSearchTerm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:drawableStart="@drawable/ic_search"
+            android:drawableTint="@color/silver"
+            android:hint="Artists, Songs, Lyrics, and More"
+            android:textColor="@color/silver" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerSearchSongs"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textInputLayoutSearch"
+        tools:listitem="@layout/song_row_layout" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
