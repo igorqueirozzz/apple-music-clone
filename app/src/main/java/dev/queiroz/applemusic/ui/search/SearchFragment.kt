@@ -1,22 +1,73 @@
 package dev.queiroz.applemusic.ui.search
 
 import android.os.Bundle
+import android.os.Handler
+
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import dev.queiroz.applemusic.R
+import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.activityViewModels
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
+import dev.queiroz.applemusic.databinding.FragmentSearchBinding
+import dev.queiroz.applemusic.ui.adapters.SongListRecyclerAdapter
+import dev.queiroz.applemusic.ui.viewmodel.AppleMusicViewModel
+import java.util.Timer
+import java.util.TimerTask
+import kotlin.concurrent.schedule
+
 class SearchFragment : Fragment() {
+
+    private val binding: FragmentSearchBinding by lazy {
+        FragmentSearchBinding.inflate(layoutInflater)
+    }
+    private val appleMusicViewModel: AppleMusicViewModel by activityViewModels()
+
+    private var searchTimer: TimerTask? = null
+
+    private val songListAdapter = SongListRecyclerAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setupRecyclerView()
+        setupSearchInputListener()
+        setupObservers()
     }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_search, container, false)
+        return binding.root
+    }
+
+    private fun setupSearchInputListener(){
+        binding.textInputSearchTerm.addTextChangedListener {
+            searchTimer?.cancel()
+            searchTimer = Timer().schedule(3000){
+                it.toString().let { term ->
+                    appleMusicViewModel.findSongsByTerm(term)
+                }
+            }
+        }
+    }
+    private fun setupRecyclerView(){
+        val decoration = DividerItemDecoration(
+            context,
+            LinearLayoutManager.VERTICAL
+        )
+        with(binding.recyclerSearchSongs){
+            adapter = songListAdapter
+            layoutManager = LinearLayoutManager(context)
+            addItemDecoration(decoration)
+        }
+    }
+
+    private fun setupObservers(){
+        appleMusicViewModel.searchResultSongs.observe(this){
+            songListAdapter.updateListOfSongs(it)
+        }
     }
 }

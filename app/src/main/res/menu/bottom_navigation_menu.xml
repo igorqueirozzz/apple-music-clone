@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menuListenNow"
+        android:enabled="true"
+        android:icon="@drawable/ic_play_circle"
+        android:title="@string/listen_now"/>
+
+    <item
+        android:id="@+id/menuBrowser"
+        android:enabled="true"
+        android:icon="@drawable/ic_apps"
+        android:title="@string/browse"/>
+
+    <item
+        android:id="@+id/menuSearch"
+        android:enabled="true"
+        android:icon="@drawable/ic_search"
+        android:title="@string/search"/>
+</menu>

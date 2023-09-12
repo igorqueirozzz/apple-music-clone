@@ -1,9 +1,11 @@
 package dev.queiroz.applemusic.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Song(
     val artistName: String,
     val collectionName: String,
     val trackName: String,
-    val albumImageUrl: String,
-    val songUrl: String
+   @SerializedName(value = "artworkUrl100") val albumImageUrl: String,
+   @SerializedName(value = "previewUrl") val songUrl: String
 )

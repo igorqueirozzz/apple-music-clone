@@ -48,6 +48,7 @@
                 android:id="@+id/pickBottomCard"
                 android:layout_width="match_parent"
                 android:layout_height="100dp"
+                android:padding="16dp"
                 android:background="@color/cardview_dark_background"
                 app:layout_constraintBottom_toBottomOf="parent">
 
