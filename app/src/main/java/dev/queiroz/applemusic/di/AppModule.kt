@@ -20,6 +20,7 @@ import dev.queiroz.applemusic.R
 import dev.queiroz.applemusic.data.Constants
 import dev.queiroz.applemusic.data.api.ItunesApiService
 import dev.queiroz.applemusic.exoplayer.MusicService
+import dev.queiroz.applemusic.ui.viewmodel.AppleMusicViewModel
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory

@@ -18,6 +18,22 @@
         app:defaultNavHost="true"
         app:navGraph="@navigation/nav_graph"/>
 
+    <androidx.cardview.widget.CardView
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigation"
+        android:layout_width="match_parent"
+        app:cardElevation="30dp"
+        app:cardCornerRadius="10dp"
+        android:layout_marginHorizontal="8dp"
+        android:layout_marginBottom="8dp"
+        android:layout_height="wrap_content">
+        <include
+            layout="@layout/floating_mini_player"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toTopOf="@id/bottomNavigation"/>
+    </androidx.cardview.widget.CardView>
+
+
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
