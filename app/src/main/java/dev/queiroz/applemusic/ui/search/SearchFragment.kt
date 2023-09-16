@@ -11,11 +11,15 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import dagger.hilt.android.AndroidEntryPoint
 import dev.queiroz.applemusic.databinding.FragmentSearchBinding
+import dev.queiroz.applemusic.exoplayer.MusicService
 import dev.queiroz.applemusic.ui.adapters.SongListRecyclerAdapter
 import dev.queiroz.applemusic.ui.viewmodel.AppleMusicViewModel
+import kotlinx.coroutines.MainScope
 import java.util.Timer
 import java.util.TimerTask
+import javax.inject.Inject
 import kotlin.concurrent.schedule
 
 class SearchFragment : Fragment() {
@@ -43,31 +47,32 @@ class SearchFragment : Fragment() {
         return binding.root
     }
 
-    private fun setupSearchInputListener(){
+    private fun setupSearchInputListener() {
         binding.textInputSearchTerm.addTextChangedListener {
             searchTimer?.cancel()
-            searchTimer = Timer().schedule(3000){
+            searchTimer = Timer().schedule(3000) {
                 it.toString().let { term ->
                     appleMusicViewModel.findSongsByTerm(term)
                 }
             }
         }
     }
-    private fun setupRecyclerView(){
+
+    private fun setupRecyclerView() {
         val decoration = DividerItemDecoration(
             context,
             LinearLayoutManager.VERTICAL
         )
-        with(binding.recyclerSearchSongs){
+        with(binding.recyclerSearchSongs) {
             adapter = songListAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(decoration)
         }
     }
 
-    private fun setupObservers(){
-        appleMusicViewModel.searchResultSongs.observe(this){
-            songListAdapter.updateListOfSongs(it)
+    private fun setupObservers() {
+        appleMusicViewModel.searchResultSongs.observe(this) { songs ->
+            songListAdapter.updateListOfSongs(songs)
         }
     }
 }

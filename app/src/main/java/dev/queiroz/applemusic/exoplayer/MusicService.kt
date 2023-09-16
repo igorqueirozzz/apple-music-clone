@@ -1,71 +1,87 @@
 package dev.queiroz.applemusic.exoplayer
 
-import android.app.PendingIntent
-import android.os.Bundle
-import android.support.v4.media.MediaBrowserCompat
-import android.support.v4.media.session.MediaSessionCompat
-import androidx.media.MediaBrowserServiceCompat
-import com.google.android.exoplayer2.SimpleExoPlayer
-import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
-import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
-import javax.inject.Inject
+import android.content.Context
+import android.net.Uri
+import android.os.Binder
+import android.util.Log
+import androidx.media3.common.AudioAttributes
+import androidx.media3.common.C
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaSessionService
+import dev.queiroz.applemusic.model.Song
 
 private const val SERVICE_TAG = "APPLE_MUSIC_SERVICE"
 
-@AndroidEntryPoint
-class MusicService : MediaBrowserServiceCompat() {
 
-    @Inject lateinit var defaultDatasourceFactory: DefaultDataSourceFactory
-
-    @Inject lateinit var exoplayer: SimpleExoPlayer
-
-    private val serviceJob = Job()
-    private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
-
-    private lateinit var mediaSession: MediaSessionCompat
-    private lateinit var mediaSessionConnector: MediaSessionConnector
+class MusicService : MediaSessionService() {
+    private lateinit var exoPlayer: ExoPlayer
+    private var mediaSession: MediaSession? = null
 
     override fun onCreate() {
         super.onCreate()
-        val activityIntent = packageManager?.getLaunchIntentForPackage(packageName)?.let {
-            PendingIntent.getActivity(this, 0, it, PendingIntent.FLAG_IMMUTABLE)
-        }
+        val song = Song(
+            artistName = "Michael Calfan",
+            collectionName = "Tomorrowland 2016: The Elixir of Life",
+            trackName = "Brothers",
+            songUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/1d/99/de/1d99dea1-4029-30bb-3a06-f714a0916538/mzaf_5810976704725283580.plus.aac.p.m4a",
+            albumImageUrl = "https://is4-ssl.mzstatic.com/image/thumb/Music18/v4/11/0e/3d/110e3d18-d05e-60f6-f15b-c0775fff0b58/5411530807338.png/500x500bb.jpg"
+        )
+        val mediaItem = MediaItem.Builder().apply {
+            setUri(song.songUrl)
+            setMediaMetadata(MediaMetadata.Builder().apply {
+                setAlbumArtist(song.collectionName)
+                setArtist(song.artistName)
+                setTitle(song.trackName)
+                setArtworkUri(Uri.parse(song.albumImageUrl))
+            }.build())
+        }.build()
+        val audioAttributes = AudioAttributes.Builder()
+            .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+            .setUsage(C.USAGE_MEDIA)
+            .build()
 
-        mediaSession = MediaSessionCompat(this, SERVICE_TAG).apply {
-            setSessionActivity(activityIntent)
-            isActive = true
-        }
+        exoPlayer = ExoPlayer.Builder(this).setAudioAttributes(audioAttributes, false).build()
+        mediaSession = MediaSession.Builder(this, exoPlayer).build()
+        exoPlayer.prepare()
 
-        sessionToken = mediaSession.sessionToken
+        Log.i("TESTE", "STERT")
+    }
 
-        mediaSessionConnector = MediaSessionConnector(mediaSession)
-        mediaSessionConnector.setPlayer(exoplayer)
+
+    override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
+        return mediaSession
     }
 
     override fun onDestroy() {
+        mediaSession?.run {
+            player.release()
+            release()
+            mediaSession = null
+        }
         super.onDestroy()
-        serviceScope.cancel()
     }
 
-    override fun onGetRoot(
-        clientPackageName: String,
-        clientUid: Int,
-        rootHints: Bundle?
-    ): BrowserRoot? {
-        TODO("Not yet implemented")
+    fun addMusicToQueue(song: Song) {
+        val mediaItem = MediaItem.Builder().apply {
+            setUri(song.songUrl)
+            setMediaMetadata(MediaMetadata.Builder().apply {
+                setAlbumArtist(song.collectionName)
+                setArtist(song.artistName)
+                setTitle(song.trackName)
+                setArtworkUri(Uri.parse(song.albumImageUrl))
+            }.build())
+        }.build()
+        exoPlayer.addMediaItem(mediaItem)
+        exoPlayer.prepare()
     }
 
-    override fun onLoadChildren(
-        parentId: String,
-        result: Result<MutableList<MediaBrowserCompat.MediaItem>>
-    ) {
-        TODO("Not yet implemented")
-    }
-
-
+    fun play() = exoPlayer.play()
+    fun pause() = exoPlayer.pause()
+    fun next() = exoPlayer.seekToNextMediaItem()
+    fun previous() = exoPlayer.seekToPrevious()
+    fun getPlayer(): Player = exoPlayer
 }

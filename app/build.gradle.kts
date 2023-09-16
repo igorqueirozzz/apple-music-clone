@@ -67,10 +67,11 @@ dependencies {
     implementation ("com.squareup.retrofit2:retrofit:$retrofitVersion")
     implementation ("com.squareup.retrofit2:converter-gson:$retrofitVersion")
 
-    //EXOPLAYER
-    api ("com.google.android.exoplayer:exoplayer-core:2.19.1")
-    api ("com.google.android.exoplayer:exoplayer-ui:2.19.1")
-    api ("com.google.android.exoplayer:extension-mediasession:2.19.1")
+    //MEDIA3 Player
+    implementation ("androidx.media3:media3-exoplayer:1.1.1")
+    implementation ("androidx.media3:media3-ui:1.1.1")
+    implementation ("androidx.media3:media3-common:1.1.1")
+    implementation ("androidx.media3:media3-session:1.1.1")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
