@@ -6,8 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
+import dev.queiroz.applemusic.R
 import dev.queiroz.applemusic.databinding.FragmentHomeBinding
+import dev.queiroz.applemusic.model.Song
 import dev.queiroz.applemusic.ui.adapters.HighlightSongsRecyclerViewAdapter
 import dev.queiroz.applemusic.ui.adapters.TopPicksRecyclerViewAdapter
 import dev.queiroz.applemusic.ui.viewmodel.AppleMusicViewModel
@@ -18,6 +21,10 @@ class HomeFragment : Fragment() {
     }
 
     private val appleMusicViewModel: AppleMusicViewModel by activityViewModels()
+    private val topPicksRecyclerViewAdapter = TopPicksRecyclerViewAdapter()
+    private val madeForYouRecyclerViewAdapter = TopPicksRecyclerViewAdapter()
+    private val recentPlayedRecyclerViewAdapter = HighlightSongsRecyclerViewAdapter()
+    private val swedenArtistsRecyclerViewAdapter = HighlightSongsRecyclerViewAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,25 +41,42 @@ class HomeFragment : Fragment() {
     private fun setupRecyclerViews() {
         with(binding) {
             recyclerViewTopPicks.apply {
+                topPicksRecyclerViewAdapter.onItemClickListener = {song ->
+                    playMusicAndOpenPlayer(song)
+                }
                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                adapter = TopPicksRecyclerViewAdapter()
+                adapter = topPicksRecyclerViewAdapter
             }
 
             recyclerRecentPlayed.apply {
+                recentPlayedRecyclerViewAdapter.onItemClickListener = {song ->
+                    playMusicAndOpenPlayer(song)
+                }
                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                adapter = HighlightSongsRecyclerViewAdapter()
+                adapter = recentPlayedRecyclerViewAdapter
             }
 
             recyclerSwedenArtists.apply {
+                swedenArtistsRecyclerViewAdapter.onItemClickListener = {song ->
+                    playMusicAndOpenPlayer(song)
+                }
                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                adapter = HighlightSongsRecyclerViewAdapter()
+                adapter = swedenArtistsRecyclerViewAdapter
             }
 
             recyclerViewMadeForYou.apply {
+                madeForYouRecyclerViewAdapter.onItemClickListener = {song ->
+                    playMusicAndOpenPlayer(song)
+                }
                 layoutManager = LinearLayoutManager(context, LinearLayoutManager.HORIZONTAL, false)
-                adapter = TopPicksRecyclerViewAdapter()
+                adapter = madeForYouRecyclerViewAdapter
             }
         }
+    }
+
+    private fun playMusicAndOpenPlayer(song: Song){
+        appleMusicViewModel.playMusic(song)
+        findNavController().navigate(R.id.action_homeFragment_to_playerFragment)
     }
 
 }

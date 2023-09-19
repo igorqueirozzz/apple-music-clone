@@ -5,4 +5,8 @@
     <string name="search">Search</string>
     <string name="listen_now">Listen now</string>
     <string name="browse">Browse</string>
+    <string name="top_picks">Top Picks</string>
+    <string name="recent_played">Recent Played</string>
+    <string name="sweden_artists">Sweden Artists</string>
+    <string name="made_for_you">Made For You</string>
 </resources>

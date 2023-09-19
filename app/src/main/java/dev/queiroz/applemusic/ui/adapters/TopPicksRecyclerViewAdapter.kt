@@ -9,13 +9,22 @@ import dev.queiroz.applemusic.dummy.DummyMusic
 import dev.queiroz.applemusic.model.Song
 
 class TopPicksRecyclerViewAdapter : RecyclerView.Adapter<TopPicksRecyclerViewAdapter.ViewHolder>() {
-val dummyMusic = DummyMusic()
-    class ViewHolder(private val itemBinding: TopPickViewBinding) : RecyclerView.ViewHolder(itemBinding.root){
-      fun bindItem(song: Song){
-          itemBinding.tvPickName.text = song.artistName
-          itemBinding.pickTextBottomCard.text = "${song.trackName} ${song.collectionName}"
-          Glide.with(itemBinding.root).load(song.albumImageUrl).into(itemBinding.pickImageAlbum)
-      }
+    private val dummyMusic = DummyMusic().topPicks.shuffled()
+    var onItemClickListener: ((Song) -> Unit?)? = null
+    inner class ViewHolder(private val itemBinding: TopPickViewBinding) :
+        RecyclerView.ViewHolder(itemBinding.root) {
+
+        init {
+            itemBinding.root.setOnClickListener {
+                onItemClickListener?.invoke(dummyMusic[bindingAdapterPosition])
+            }
+        }
+
+        fun bindItem(song: Song) {
+            itemBinding.tvPickName.text = song.artistName
+            itemBinding.pickTextBottomCard.text = "${song.trackName} ${song.collectionName}"
+            Glide.with(itemBinding.root).load(song.albumImageUrl).into(itemBinding.pickImageAlbum)
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -23,11 +32,11 @@ val dummyMusic = DummyMusic()
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int {   
-        return dummyMusic.songs.size
+    override fun getItemCount(): Int {
+        return dummyMusic.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bindItem(dummyMusic.songs[position])
+        holder.bindItem(dummyMusic[position])
     }
 }

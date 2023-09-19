@@ -11,10 +11,18 @@ import dev.queiroz.applemusic.model.Song
 class HighlightSongsRecyclerViewAdapter :
     RecyclerView.Adapter<HighlightSongsRecyclerViewAdapter.ViewHolder>() {
 
-    val dummyMusic = DummyMusic()
+    private val dummyMusic: List<Song> = DummyMusic().topPicks.shuffled()
 
-    class ViewHolder(private val itemBinding: HighlightMusicCoverViewBinding) :
+    var onItemClickListener: ((Song) -> Unit?)? = null
+
+   inner class ViewHolder(private val itemBinding: HighlightMusicCoverViewBinding) :
         RecyclerView.ViewHolder(itemBinding.root) {
+
+       init {
+           itemBinding.root.setOnClickListener {
+               onItemClickListener?.invoke(dummyMusic[bindingAdapterPosition])
+           }
+       }
         fun bindItem(song: Song) {
             itemBinding.textViewHighlightTitle.text = song.artistName
             itemBinding.textViewHighlightTitle.text = song.trackName
@@ -35,10 +43,10 @@ class HighlightSongsRecyclerViewAdapter :
     }
 
     override fun getItemCount(): Int {
-        return dummyMusic.songs.size
+        return dummyMusic.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bindItem(dummyMusic.songs[position])
+        holder.bindItem(dummyMusic[position])
     }
 }

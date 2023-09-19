@@ -43,7 +43,7 @@ android {
 }
 
 dependencies {
-    val navVersion = "2.5.3"
+    val navVersion = "2.3.5"
     val retrofitVersion = "2.9.0"
 
     implementation("androidx.core:core-ktx:1.9.0")
@@ -73,7 +73,7 @@ dependencies {
     implementation ("androidx.media3:media3-common:1.1.1")
     implementation ("androidx.media3:media3-session:1.1.1")
 
-    implementation ("androidx.palette:palette:1.0.0")
+    implementation ("androidx.palette:palette-ktx:1.0.0")
 
 
     testImplementation("junit:junit:4.13.2")

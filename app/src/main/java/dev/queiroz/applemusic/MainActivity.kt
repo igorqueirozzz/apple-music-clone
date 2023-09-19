@@ -6,6 +6,7 @@ import android.content.ServiceConnection
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.media3.common.MediaItem
 import androidx.media3.session.MediaController
+import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
 import com.google.common.util.concurrent.ListenableFuture
@@ -38,13 +40,14 @@ class MainActivity : AppCompatActivity() {
             musicService = musicServiceBinder.getService()
             musicService?.addProgressListener(appleMusicViewModel)
         }
-
         override fun onServiceDisconnected(p0: ComponentName?) = Unit
     }
 
     private val binding: ActivityMainBinding by lazy {
         ActivityMainBinding.inflate(layoutInflater)
     }
+
+    private lateinit var navController: NavController
 
     private val homeFragment = HomeFragment()
     private val searchFragment = SearchFragment()
@@ -57,6 +60,7 @@ class MainActivity : AppCompatActivity() {
         setupBottomNavigation()
         setupObservers()
         setupListeners()
+        navController = findNavController(R.id.nav_host_fragment)
     }
 
     override fun onDestroy() {
@@ -104,9 +108,9 @@ class MainActivity : AppCompatActivity() {
             isSongPlaying.observe(this@MainActivity) { isSongPlaying ->
                 floatingMiniPlayerPlayButton.setImageResource(if (isSongPlaying) R.drawable.ic_pause else R.drawable.ic_play)
                 floatingMiniPlayerPlayButton.setOnClickListener {
-                    if (isSongPlaying){
+                    if (isSongPlaying) {
                         musicService?.pause()
-                    }else{
+                    } else {
                         musicService?.play()
                     }
                 }
@@ -114,13 +118,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupListeners(){
+    private fun setupListeners() {
         val floatingMiniPlayerBackButton =
             findViewById<ImageView>(R.id.floatingMiniPlayerBackButton)
         val floatingMiniPlayerNextButton =
             findViewById<ImageView>(R.id.floatingMiniPlayerNextButton)
-
-        val floatingMiniPlayerPlayButton = findViewById<ImageView>(R.id.floatingMiniPlayerPlayButton)
+        val floatingMiniPlayerPlayButton =
+            findViewById<ImageView>(R.id.floatingMiniPlayerPlayButton)
+        val floatingMiniPlayerImageView = findViewById<ImageView>(R.id.floatingMiniPlayerImageView)
 
         floatingMiniPlayerBackButton.setOnClickListener {
             musicService?.previousMusic()
@@ -131,10 +136,28 @@ class MainActivity : AppCompatActivity() {
         }
 
         floatingMiniPlayerPlayButton.setOnClickListener {
-           appleMusicViewModel.currentSong.value.let {
-               appleMusicViewModel.playMusic(it!!)
-               findNavController(R.id.nav_host_fragment).navigate(R.id.action_homeFragment_to_playerFragment)
-           }
+            appleMusicViewModel.currentSong.value.let {
+                appleMusicViewModel.playMusic(it!!)
+            }
+        }
+
+        floatingMiniPlayerImageView.setOnClickListener {
+            navController?.navigate(R.id.playerFragment)
+        }
+
+    }
+
+    fun hideBottomComponents() {
+        with(binding) {
+            bottomNavigation.visibility = View.GONE
+            floatingMiniPlayer.visibility = View.GONE
+        }
+    }
+
+    fun showBottomComponents() {
+        with(binding) {
+            bottomNavigation.visibility = View.VISIBLE
+            floatingMiniPlayer.visibility = View.VISIBLE
         }
     }
 }

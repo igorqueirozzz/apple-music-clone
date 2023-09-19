@@ -4,7 +4,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/background"
     android:padding="32dp"
     tools:context=".ui.player.PlayerFragment">
 
@@ -24,6 +23,10 @@
             android:id="@+id/playerImageView"
             android:layout_width="250dp"
             android:layout_height="250dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:src="@drawable/album_demo" />
     </androidx.cardview.widget.CardView>
 
@@ -53,7 +56,7 @@
 
 
     <com.google.android.material.slider.Slider
-        android:id="@+id/PlayerProgress"
+        android:id="@+id/player_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:valueFrom="0.0"
@@ -66,16 +69,16 @@
         android:id="@+id/playerCurrentSongPositionTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintStart_toStartOf="@id/PlayerProgress"
-        app:layout_constraintTop_toBottomOf="@id/PlayerProgress"
+        app:layout_constraintStart_toStartOf="@id/player_progress"
+        app:layout_constraintTop_toBottomOf="@id/player_progress"
         tools:text="1:00" />
 
     <TextView
         android:id="@+id/playerCurrentSongDurationTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="@id/PlayerProgress"
-        app:layout_constraintTop_toBottomOf="@id/PlayerProgress"
+        app:layout_constraintEnd_toEndOf="@id/player_progress"
+        app:layout_constraintTop_toBottomOf="@id/player_progress"
         tools:text="-1:00" />
 
     <ImageView
@@ -83,6 +86,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginStart="32dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_rewind"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/playerCurrentSongPositionTextView" />
@@ -91,6 +95,7 @@
         android:id="@+id/playerPlayButton"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_play"
         app:layout_constraintEnd_toStartOf="@id/playerNextButton"
         app:layout_constraintStart_toEndOf="@id/playerBackButton"
@@ -101,6 +106,7 @@
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:layout_marginEnd="32dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/ic_forward"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/playerCurrentSongPositionTextView" />
