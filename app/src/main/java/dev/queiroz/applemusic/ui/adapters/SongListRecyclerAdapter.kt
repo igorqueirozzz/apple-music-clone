@@ -12,9 +12,15 @@ import dev.queiroz.applemusic.model.Song
 class SongListRecyclerAdapter :
     RecyclerView.Adapter<SongListRecyclerAdapter.ViewHolder>() {
     private val listOfSongs: MutableList<Song> = mutableListOf()
-
-    class ViewHolder(private val itemBinding: SongRowLayoutBinding) :
+    var onItemClickListener: ((Song) -> Unit?)? = null
+    inner class ViewHolder(private val itemBinding: SongRowLayoutBinding) :
         RecyclerView.ViewHolder(itemBinding.root) {
+
+        init {
+            itemBinding.root.setOnClickListener {
+                onItemClickListener?.invoke(listOfSongs[bindingAdapterPosition])
+            }
+        }
         fun bindItem(song: Song) {
             itemBinding.tvArtistName.text = song.artistName
             itemBinding.tvSongName.text = song.trackName

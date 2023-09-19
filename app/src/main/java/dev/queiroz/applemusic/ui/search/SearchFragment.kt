@@ -1,25 +1,20 @@
 package dev.queiroz.applemusic.ui.search
 
 import android.os.Bundle
-import android.os.Handler
-
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import dagger.hilt.android.AndroidEntryPoint
 import dev.queiroz.applemusic.databinding.FragmentSearchBinding
-import dev.queiroz.applemusic.exoplayer.MusicService
+import dev.queiroz.applemusic.extensions.hideKeyboard
 import dev.queiroz.applemusic.ui.adapters.SongListRecyclerAdapter
 import dev.queiroz.applemusic.ui.viewmodel.AppleMusicViewModel
-import kotlinx.coroutines.MainScope
 import java.util.Timer
 import java.util.TimerTask
-import javax.inject.Inject
 import kotlin.concurrent.schedule
 
 class SearchFragment : Fragment() {
@@ -36,8 +31,8 @@ class SearchFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setupRecyclerView()
-        setupSearchInputListener()
         setupObservers()
+        setupListeners()
     }
 
     override fun onCreateView(
@@ -47,12 +42,13 @@ class SearchFragment : Fragment() {
         return binding.root
     }
 
-    private fun setupSearchInputListener() {
+    private fun setupListeners() {
         binding.textInputSearchTerm.addTextChangedListener {
             searchTimer?.cancel()
-            searchTimer = Timer().schedule(3000) {
+            searchTimer = Timer().schedule(1500) {
                 it.toString().let { term ->
                     appleMusicViewModel.findSongsByTerm(term)
+                    hideKeyboard()
                 }
             }
         }
@@ -64,6 +60,9 @@ class SearchFragment : Fragment() {
             LinearLayoutManager.VERTICAL
         )
         with(binding.recyclerSearchSongs) {
+            songListAdapter.onItemClickListener = {song ->
+                appleMusicViewModel.playMusic(song)
+            }
             adapter = songListAdapter
             layoutManager = LinearLayoutManager(context)
             addItemDecoration(decoration)
@@ -71,8 +70,15 @@ class SearchFragment : Fragment() {
     }
 
     private fun setupObservers() {
-        appleMusicViewModel.searchResultSongs.observe(this) { songs ->
-            songListAdapter.updateListOfSongs(songs)
+        with(appleMusicViewModel){
+            searchResultSongs.observe(this@SearchFragment) { songs ->
+                songListAdapter.updateListOfSongs(songs)
+            }
+
+            loadingSearch.observe(this@SearchFragment){
+                    binding.loadingListIndicator.visibility = if(it) View.VISIBLE else View.GONE
+                    binding.recyclerSearchSongs.visibility = if(it) View.GONE else View.VISIBLE
+            }
         }
     }
 }
