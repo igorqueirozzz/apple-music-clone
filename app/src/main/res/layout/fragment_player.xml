@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/background"
+    android:padding="32dp"
+    tools:context=".ui.player.PlayerFragment">
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/playerCardImageView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/playerImageView"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            tools:src="@drawable/album_demo" />
+    </androidx.cardview.widget.CardView>
+
+
+    <TextView
+        android:id="@+id/playerSongNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="70dp"
+        android:background="@android:color/transparent"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playerCardImageView"
+        tools:text="The Return" />
+
+    <TextView
+        android:id="@+id/playerArtistNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:textColor="@color/silver"
+        android:textSize="20sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playerSongNameTextView"
+        tools:text="Pryda" />
+
+
+    <com.google.android.material.slider.Slider
+        android:id="@+id/PlayerProgress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:valueFrom="0.0"
+        app:labelBehavior="gone"
+        app:layout_constraintTop_toBottomOf="@id/playerArtistNameTextView"
+        app:thumbRadius="6dp"
+        app:trackHeight="8dp" />
+
+    <TextView
+        android:id="@+id/playerCurrentSongPositionTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="@id/PlayerProgress"
+        app:layout_constraintTop_toBottomOf="@id/PlayerProgress"
+        tools:text="1:00" />
+
+    <TextView
+        android:id="@+id/playerCurrentSongDurationTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="@id/PlayerProgress"
+        app:layout_constraintTop_toBottomOf="@id/PlayerProgress"
+        tools:text="-1:00" />
+
+    <ImageView
+        android:id="@+id/playerBackButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginStart="32dp"
+        android:src="@drawable/ic_rewind"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playerCurrentSongPositionTextView" />
+
+    <ImageView
+        android:id="@+id/playerPlayButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@drawable/ic_play"
+        app:layout_constraintEnd_toStartOf="@id/playerNextButton"
+        app:layout_constraintStart_toEndOf="@id/playerBackButton"
+        app:layout_constraintTop_toBottomOf="@id/playerCurrentSongPositionTextView" />
+
+    <ImageView
+        android:id="@+id/playerNextButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginEnd="32dp"
+        android:src="@drawable/ic_forward"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/playerCurrentSongPositionTextView" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

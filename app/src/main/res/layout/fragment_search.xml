@@ -38,7 +38,6 @@
         app:boxCornerRadiusBottomStart="10dp"
         app:boxCornerRadiusTopEnd="10dp"
         app:boxCornerRadiusTopStart="10dp"
-        app:layout_constraintBottom_toTopOf="@id/recyclerSearchSongs"
         app:layout_constraintTop_toBottomOf="@id/tvSearch">
 
         <com.google.android.material.textfield.TextInputEditText
@@ -51,6 +50,16 @@
             android:textColor="@color/silver" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/loadingListIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/textInputLayoutSearch"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerSearchSongs"
         android:layout_width="match_parent"
@@ -58,6 +67,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@id/textInputLayoutSearch"
         tools:listitem="@layout/song_row_layout" />
+
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

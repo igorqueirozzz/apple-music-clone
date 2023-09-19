@@ -7,7 +7,6 @@ import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import android.util.Log
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -22,7 +21,7 @@ import dev.queiroz.applemusic.model.Song
 class MusicService : MediaSessionService() {
     private lateinit var exoPlayer: ExoPlayer
     private var mediaSession: MediaSession? = null
-    private val progressListeners = mutableListOf<MusicProgressListener>()
+    private val progressListeners = mutableListOf<MusicServiceListener>()
     private var progressUpdateHandler: Handler? = null
     private val updateProgressAction = object : Runnable {
         override fun run() {
@@ -40,27 +39,8 @@ class MusicService : MediaSessionService() {
 
     override fun onCreate() {
         super.onCreate()
-        val song = Song(
-            artistName = "Michael Calfan",
-            collectionName = "Tomorrowland 2016: The Elixir of Life",
-            trackName = "Brothers",
-            songUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/1d/99/de/1d99dea1-4029-30bb-3a06-f714a0916538/mzaf_5810976704725283580.plus.aac.p.m4a",
-            albumImageUrl = "https://is4-ssl.mzstatic.com/image/thumb/Music18/v4/11/0e/3d/110e3d18-d05e-60f6-f15b-c0775fff0b58/5411530807338.png/500x500bb.jpg"
-        )
-        val mediaItem = MediaItem.Builder().apply {
-            setUri(song.songUrl)
-            setMediaMetadata(MediaMetadata.Builder().apply {
-                setAlbumArtist(song.collectionName)
-                setArtist(song.artistName)
-                setTitle(song.trackName)
-                setArtworkUri(Uri.parse(song.albumImageUrl))
-            }.build())
-        }.build()
-
         setupExoPlayer()
         mediaSession = MediaSession.Builder(this, exoPlayer).build()
-//        exoPlayer.setMediaItem(mediaItem)
-//        exoPlayer.play()
     }
 
     private fun setupExoPlayer() {
@@ -74,16 +54,35 @@ class MusicService : MediaSessionService() {
             .build()
 
         exoPlayer.addListener(object : Player.Listener {
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                super.onIsPlayingChanged(isPlaying)
+                when (isPlaying) {
+                    true -> progressListeners.forEach { it.onPlayMusic() }
+                    false -> progressListeners.forEach { it.onPauseMusic() }
+                }
+            }
+
             override fun onPlaybackStateChanged(playbackState: Int) {
-                if (playbackState == PlaybackState.STATE_PLAYING) {
-                    val totalPosition = exoPlayer.duration.toInt()
-                    progressListeners.forEach { listener ->
-                        listener.onMusicProgressUpdate(0, totalPosition)
+                when (playbackState) {
+                    PlaybackState.STATE_PLAYING -> {
+                        val totalPosition = exoPlayer.duration.toInt()
+                        progressListeners.forEach { listener ->
+                            listener.onMusicProgressUpdate(0, totalPosition)
+                            listener.onPlayMusic()
+                        }
+                        progressUpdateHandler = Handler(Looper.getMainLooper())
+                        progressUpdateHandler?.post(updateProgressAction)
                     }
-                    progressUpdateHandler = Handler(Looper.getMainLooper())
-                    progressUpdateHandler?.post(updateProgressAction)
-                } else {
-                    progressUpdateHandler = null
+
+                    PlaybackState.STATE_STOPPED, PlaybackState.STATE_PAUSED, PlaybackState.STATE_ERROR, PlaybackState.ACTION_PAUSE.toInt() -> {
+                        progressListeners.forEach { listener ->
+                            listener.onPauseMusic()
+                        }
+                    }
+
+                    else -> {
+                        progressUpdateHandler = null
+                    }
                 }
                 super.onPlaybackStateChanged(playbackState)
             }
@@ -108,11 +107,11 @@ class MusicService : MediaSessionService() {
         super.onDestroy()
     }
 
-    fun addProgressListener(listener: MusicProgressListener) {
+    fun addProgressListener(listener: MusicServiceListener) {
         progressListeners.add(listener)
     }
 
-    fun removeProgressListener(listener: MusicProgressListener) {
+    fun removeProgressListener(listener: MusicServiceListener) {
         progressListeners.remove(listener)
     }
 
@@ -122,6 +121,11 @@ class MusicService : MediaSessionService() {
     }
 
     fun getPlayer(): ExoPlayer = exoPlayer
+
+    fun play() = exoPlayer.play()
+    fun pause() = exoPlayer.pause()
+    fun nextMusic() = exoPlayer.seekToNext()
+    fun previousMusic() = exoPlayer.seekToPrevious()
 
     inner class MusicServiceBinder : Binder() {
         fun getService(): MusicService {
