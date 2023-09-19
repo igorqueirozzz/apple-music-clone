@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         unbindService(musicServiceConnection)
+        musicService?.onDestroy()
     }
 
     private fun setupBottomNavigation() {
