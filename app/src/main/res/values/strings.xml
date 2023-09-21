@@ -9,4 +9,8 @@
     <string name="recent_played">Recent Played</string>
     <string name="sweden_artists">Sweden Artists</string>
     <string name="made_for_you">Made For You</string>
+    <string name="previous">Previous</string>
+    <string name="play">Play</string>
+    <string name="next">Next</string>
+    <string name="pause">Pause</string>
 </resources>

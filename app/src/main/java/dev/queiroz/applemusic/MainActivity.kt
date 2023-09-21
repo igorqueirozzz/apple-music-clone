@@ -1,36 +1,32 @@
 package dev.queiroz.applemusic
 
+import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
-import android.util.Log
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
-import androidx.media3.common.MediaItem
-import androidx.media3.session.MediaController
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
-import com.google.common.util.concurrent.ListenableFuture
 import dagger.hilt.android.AndroidEntryPoint
 import dev.queiroz.applemusic.databinding.ActivityMainBinding
 import dev.queiroz.applemusic.exoplayer.MusicService
 import dev.queiroz.applemusic.ui.home.HomeFragment
 import dev.queiroz.applemusic.ui.search.SearchFragment
 import dev.queiroz.applemusic.ui.viewmodel.AppleMusicViewModel
-import javax.inject.Inject
+import dev.queiroz.applemusic.utils.MediaItemUtils
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
-
-    @Inject
-    lateinit var mediaController: ListenableFuture<MediaController>
     private val appleMusicViewModel: AppleMusicViewModel by viewModels()
     private var musicService: MusicService? = null
 
@@ -40,6 +36,7 @@ class MainActivity : AppCompatActivity() {
             musicService = musicServiceBinder.getService()
             musicService?.addProgressListener(appleMusicViewModel)
         }
+
         override fun onServiceDisconnected(p0: ComponentName?) = Unit
     }
 
@@ -54,8 +51,20 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+                0
+            )
+        }
+        Intent(this, MusicService::class.java).also {
+            it.action = MusicService.Action.START_SERVICE.toString()
+            startService(it)
+        }
         val serviceConnectionIntent = Intent(this, MusicService::class.java)
         bindService(serviceConnectionIntent, musicServiceConnection, 0)
+
         setContentView(binding.root)
         setupBottomNavigation()
         setupObservers()
@@ -94,7 +103,7 @@ class MainActivity : AppCompatActivity() {
         with(appleMusicViewModel) {
             currentSong.observe(this@MainActivity) {
                 musicService?.getPlayer()
-                    ?.setMediaItem(MediaItem.Builder().setUri(it.songUrl).build())
+                    ?.setMediaItem(MediaItemUtils.mediaItemFromSong(it))
 
                 //Floating miniplayer
                 Glide

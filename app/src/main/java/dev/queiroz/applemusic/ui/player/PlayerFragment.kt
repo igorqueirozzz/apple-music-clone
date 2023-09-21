@@ -81,49 +81,37 @@ class PlayerFragment : Fragment() {
         imageBitmap?.let { bitmap ->
             Palette.from(bitmap).generate { palette ->
                 val swatchList = palette?.swatches
-                if (!swatchList.isNullOrEmpty()) {
 
-                    val swatchCopy = ArrayList(swatchList)
 
-                    swatchCopy.sortByDescending { it.population }
+                val swatchCopy = ArrayList(swatchList)
 
-                    val colors = swatchList.take(3).map { it.rgb }.toIntArray()
+                swatchCopy.sortByDescending { it.population }
 
-                    val gradientDrawable = GradientDrawable(
-                        GradientDrawable.Orientation.TOP_BOTTOM,
-                        colors
-                    )
-                    val contrastColor = chooseContrastColor(colors.toList())
-                    val contrastColorColorStateList = ColorStateList.valueOf(contrastColor)
+                val colors = arrayOf(Color.DKGRAY, palette?.vibrantSwatch?.rgb ?: Color.RED)
+                val contrastColor = palette?.lightVibrantSwatch?.rgb ?: Color.WHITE
+                val darkContrastColor = palette?.darkVibrantSwatch?.rgb ?: Color.DKGRAY
+                val gradientDrawable = GradientDrawable(
+                    GradientDrawable.Orientation.TOP_BOTTOM,
+                    colors.toIntArray()
+                )
 
-                    with(binding) {
-                        root.background = gradientDrawable
-                        playerSongNameTextView.setTextColor(contrastColor)
-                        playerArtistNameTextView.setTextColor(contrastColor)
-                        playerProgress.trackTintList = ColorStateList.valueOf(colors[2])
-                        playerProgress.trackActiveTintList = contrastColorColorStateList
-                        playerProgress.thumbTintList = contrastColorColorStateList
-                        playerBackButton.imageTintList = contrastColorColorStateList
-                        playerPlayButton.imageTintList = contrastColorColorStateList
-                        playerNextButton.imageTintList = contrastColorColorStateList
-                    }
+                val contrastColorColorStateList = ColorStateList.valueOf(contrastColor)
 
+                with(binding) {
+                    root.background = gradientDrawable
+                    playerSongNameTextView.setTextColor(palette?.lightVibrantSwatch?.rgb ?: Color.WHITE)
+                    playerArtistNameTextView.setTextColor(contrastColor)
+                    playerProgress.trackTintList = ColorStateList.valueOf(darkContrastColor)
+                    playerProgress.trackActiveTintList = contrastColorColorStateList
+                    playerProgress.thumbTintList = contrastColorColorStateList
+                    playerBackButton.imageTintList = contrastColorColorStateList
+                    playerPlayButton.imageTintList = contrastColorColorStateList
+                    playerNextButton.imageTintList = contrastColorColorStateList
                 }
             }
         }
     }
 
-    private fun chooseContrastColor(colors: List<Int>): Int {
-        val defaultContrastColor = Color.WHITE
-
-        for (color in colors) {
-            val contrast = ColorUtils.calculateContrast(color, defaultContrastColor)
-            if (contrast >= 10) {
-                return color
-            }
-        }
-        return defaultContrastColor
-    }
 
     private fun setupObservers() {
         with(appleMusicViewModel) {

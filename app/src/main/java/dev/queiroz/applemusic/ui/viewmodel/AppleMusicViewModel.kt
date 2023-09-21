@@ -46,9 +46,17 @@ class AppleMusicViewModel @Inject constructor(private val itunesRepository: Itun
         }
         viewModelScope.launch(Dispatchers.IO) {
             val result = itunesRepository.findSongsByTerm(term)
-            withContext(Dispatchers.Main){
+            withContext(Dispatchers.Main) {
                 if (result.isSuccessful) {
-                    _searchResultSongs.value = result.body()?.songs
+                    _searchResultSongs.value = result.body()?.songs?.map {
+                        Song(
+                            artistName = it.artistName,
+                            trackName = it.trackName,
+                            songUrl = it.songUrl,
+                            collectionName = it.collectionName,
+                            albumImageUrl = it.albumImageUrl.replace("100x100", "500x500")
+                        )
+                    }
                 } else {
                     println(result.message())
                 }
@@ -67,9 +75,11 @@ class AppleMusicViewModel @Inject constructor(private val itunesRepository: Itun
         _songPosition.value = Pair(first = 0, second = 1)
     }
 
-    override fun onPlayMusic() { _isSongPlaying.value = true }
+    override fun onPlayMusic() {
+        _isSongPlaying.value = true
+    }
 
-    fun playMusic(song: Song){
+    fun playMusic(song: Song) {
         _currentSong.value = song
     }
 
