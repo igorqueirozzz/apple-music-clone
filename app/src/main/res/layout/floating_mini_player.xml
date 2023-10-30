@@ -5,7 +5,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@android:color/transparent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
 
     <LinearLayout
@@ -81,5 +84,13 @@
 
 
     </LinearLayout>
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/floatingMiniPlayerLoadingIndicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:minHideDelay="@integer/material_motion_duration_long_2"
+        android:indeterminate="true"/>
 
 </LinearLayout>

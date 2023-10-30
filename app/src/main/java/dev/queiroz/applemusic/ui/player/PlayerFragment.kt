@@ -9,9 +9,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.graphics.ColorUtils
+import androidx.core.graphics.drawable.toDrawable
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.palette.graphics.Palette
 import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
@@ -21,6 +22,9 @@ import dev.queiroz.applemusic.R
 import dev.queiroz.applemusic.databinding.FragmentPlayerBinding
 import dev.queiroz.applemusic.model.Song
 import dev.queiroz.applemusic.ui.viewmodel.AppleMusicViewModel
+import dev.queiroz.applemusic.ui.viewmodel.MusicState
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 class PlayerFragment : Fragment() {
 
@@ -34,14 +38,17 @@ class PlayerFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val currentSong: Song? = appleMusicViewModel.currentSong.value
-        setupObservers()
+        val currentSong: Song? = appleMusicViewModel.currentSong.value.song
         with(binding) {
             currentSong.let { song ->
                 playerArtistNameTextView.text = song?.artistName
                 playerSongNameTextView.text = song?.trackName
-                processImage(song!!.albumImageUrl)
+                song!!.albumImageUrl?.let { processImage(it) }
             }
+        }
+
+        lifecycleScope.launch {
+            setupObservers()
         }
     }
 
@@ -87,19 +94,18 @@ class PlayerFragment : Fragment() {
 
                 swatchCopy.sortByDescending { it.population }
 
-                val colors = arrayOf(Color.DKGRAY, palette?.vibrantSwatch?.rgb ?: Color.RED)
+
                 val contrastColor = palette?.lightVibrantSwatch?.rgb ?: Color.WHITE
                 val darkContrastColor = palette?.darkVibrantSwatch?.rgb ?: Color.DKGRAY
-                val gradientDrawable = GradientDrawable(
-                    GradientDrawable.Orientation.TOP_BOTTOM,
-                    colors.toIntArray()
-                )
 
                 val contrastColorColorStateList = ColorStateList.valueOf(contrastColor)
 
                 with(binding) {
-                    root.background = gradientDrawable
-                    playerSongNameTextView.setTextColor(palette?.lightVibrantSwatch?.rgb ?: Color.WHITE)
+                    root.background = (palette?.mutedSwatch?.rgb ?: palette?.darkVibrantSwatch?.rgb
+                    ?: Color.DKGRAY).toDrawable()
+                    playerSongNameTextView.setTextColor(
+                        palette?.lightVibrantSwatch?.rgb ?: Color.WHITE
+                    )
                     playerArtistNameTextView.setTextColor(contrastColor)
                     playerProgress.trackTintList = ColorStateList.valueOf(darkContrastColor)
                     playerProgress.trackActiveTintList = contrastColorColorStateList
@@ -113,21 +119,32 @@ class PlayerFragment : Fragment() {
     }
 
 
-    private fun setupObservers() {
-        with(appleMusicViewModel) {
-            songPosition.observe(this@PlayerFragment) {
-                with(binding) {
-                    playerProgress.valueTo = it.second.toFloat()
-                    playerProgress.value = it.first.toFloat()
+    private suspend fun setupObservers() {
+        appleMusicViewModel.currentSong.collectLatest { musicState ->
+            val playerProgress = binding.playerProgress
+            val playerPlayButton = binding.playerPlayButton
+            val playerLoadingIndicator = binding.playerLoadingIndicator
+            when (musicState) {
+                is MusicState.Playing -> {
+                    playerLoadingIndicator.hide()
+                    playerProgress.visibility = View.VISIBLE
+                    playerProgress.valueTo = musicState.songPosition.second.toFloat()
+                    playerProgress.value = musicState.songPosition.first.toFloat()
+                    playerPlayButton.setImageResource(R.drawable.ic_pause)
+                    playerPlayButton.setOnClickListener { appleMusicViewModel.onPauseMusic() }
                 }
-            }
 
-            isSongPlaying.observe(this@PlayerFragment) { isPlaying ->
-                binding.playerPlayButton.setImageDrawable(
-                    if (isPlaying) resources.getDrawable(R.drawable.ic_pause) else resources.getDrawable(
-                        R.drawable.ic_play
-                    )
-                )
+                is MusicState.Loading -> {
+                    playerLoadingIndicator.hide()
+                    playerProgress.visibility = View.GONE
+                    playerPlayButton.setOnClickListener { null }
+                }
+
+                is MusicState.Paused -> {
+                    playerProgress.value = 0f
+                    playerPlayButton.setImageResource(R.drawable.ic_play)
+                    playerPlayButton.setOnClickListener { appleMusicViewModel.unpauseMusic() }
+                }
             }
         }
     }

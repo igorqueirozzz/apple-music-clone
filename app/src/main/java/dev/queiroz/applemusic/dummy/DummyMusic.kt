@@ -28,7 +28,7 @@ class DummyMusic {
                 collectionName = "Tomorrowland 2016: The Elixir of Life",
                 trackName = "Brothers",
                 songUrl = "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview125/v4/1d/99/de/1d99dea1-4029-30bb-3a06-f714a0916538/mzaf_5810976704725283580.plus.aac.p.m4a",
-                albumImageUrl = "https://is4-ssl.mzstatic.com/image/thumb/Music18/v4/11/0e/3d/110e3d18-d05e-60f6-f15b-c0775fff0b58/5411530807338.png/500x500bb.jpg"
+                albumImageUrl = "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/58/07/65/58076591-4dff-d8d1-d45f-7d30c8d8f7c0/8712944506150.jpg/500x500bb.jpg"
             )
         )
         add(

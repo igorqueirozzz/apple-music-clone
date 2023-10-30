@@ -61,9 +61,19 @@
         android:layout_height="wrap_content"
         android:valueFrom="0.0"
         app:labelBehavior="gone"
+        android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/playerArtistNameTextView"
         app:thumbRadius="6dp"
         app:trackHeight="8dp" />
+
+    <com.google.android.material.progressindicator.LinearProgressIndicator
+        android:id="@+id/player_loading_indicator"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/playerArtistNameTextView"
+        android:indeterminate="true"
+        app:minHideDelay="@integer/material_motion_duration_long_2"
+        />
 
     <TextView
         android:id="@+id/playerCurrentSongPositionTextView"

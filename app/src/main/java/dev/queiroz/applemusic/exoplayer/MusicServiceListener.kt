@@ -1,7 +1,7 @@
 package dev.queiroz.applemusic.exoplayer
 
+import dev.queiroz.applemusic.ui.viewmodel.MusicState
+
 interface MusicServiceListener {
-    fun onMusicProgressUpdate(currentPosition: Int, totalPosition: Int)
-    fun onPauseMusic()
-    fun onPlayMusic()
+    fun onStateChanged(musicState: MusicState)
 }

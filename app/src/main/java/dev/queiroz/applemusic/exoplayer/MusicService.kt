@@ -13,6 +13,7 @@ import android.os.Binder
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
@@ -24,6 +25,7 @@ import com.bumptech.glide.request.transition.Transition
 import dagger.hilt.android.AndroidEntryPoint
 import dev.queiroz.applemusic.R
 import dev.queiroz.applemusic.constants.NotificationConstants
+import dev.queiroz.applemusic.ui.viewmodel.MusicState
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -34,7 +36,7 @@ class MusicService : MediaSessionService() {
     @Inject
     lateinit var mediaSession: MediaSession
 
-    private val progressListeners = mutableListOf<MusicServiceListener>()
+    private val listeners = mutableListOf<MusicServiceListener>()
     private var progressUpdateHandler: Handler? = null
     private val updateProgressAction = object : Runnable {
         override fun run() {
@@ -42,8 +44,15 @@ class MusicService : MediaSessionService() {
                 val currentPosition =
                     if (exoPlayer.currentPosition.toInt() < 0) 0 else exoPlayer.currentPosition.toInt()
                 val totalDuration = exoPlayer.duration.toInt()
-                progressListeners.forEach { listener ->
-                    listener.onMusicProgressUpdate(currentPosition, totalDuration)
+                listeners.forEach { listener ->
+                    listener.onStateChanged(
+                        MusicState.Playing(
+                            songPosition = Pair(
+                                currentPosition,
+                                totalDuration
+                            )
+                        )
+                    )
                 }
 
             }
@@ -93,47 +102,106 @@ class MusicService : MediaSessionService() {
         exoPlayer.addListener(object : Player.Listener {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 super.onIsPlayingChanged(isPlaying)
+                val duration = exoPlayer.duration.toInt()
+                val position = exoPlayer.currentPosition.toInt()
                 playPauseMusicAction = when (isPlaying) {
                     true -> {
-                        progressListeners.forEach { it.onPlayMusic() }
+                        listeners.forEach {
+                            it.onStateChanged(
+                                MusicState.Playing(
+                                    songPosition = Pair(position, duration)
+                                )
+                            )
+                        }
                         pauseMusicAction
                     }
 
                     false -> {
-                        progressListeners.forEach { it.onPauseMusic() }
+                        listeners.forEach {
+                            it.onStateChanged(
+                                MusicState.Paused(
+                                    songPosition = Pair(
+                                        position,
+                                        duration
+                                    )
+                                )
+                            )
+                        }
                         playMusicAction
                     }
                 }
                 updateNotification()
             }
 
+            override fun onPlayerError(error: PlaybackException) {
+                super.onPlayerError(error)
+                listeners.forEach { listener ->
+                    listener.onStateChanged(
+                        MusicState.ErrorOnLoad(
+                            errorMessage = getString(
+                                R.string.can_t_load_song_check_your_connection_and_try_again
+                            )
+                        )
+                    )
+                }
+            }
+
             override fun onPlaybackStateChanged(playbackState: Int) {
                 when (playbackState) {
                     PlaybackState.STATE_PLAYING -> {
-                        val totalPosition = exoPlayer.duration.toInt()
-                        progressListeners.forEach { listener ->
-                            listener.onMusicProgressUpdate(0, totalPosition)
-                            listener.onPlayMusic()
+                        val finalPosition = exoPlayer.duration.toInt()
+                        val position = exoPlayer.currentPosition.toInt()
+                        listeners.forEach { listener ->
+                            listener.onStateChanged(
+                                MusicState.Playing(
+                                    songPosition = Pair(
+                                        position,
+                                        finalPosition
+                                    )
+                                )
+                            )
                         }
                         progressUpdateHandler = Handler(Looper.getMainLooper())
                         progressUpdateHandler?.post(updateProgressAction)
 
                     }
 
-                    PlaybackState.STATE_STOPPED, PlaybackState.STATE_PAUSED, PlaybackState.STATE_ERROR -> {
-                        progressListeners.forEach { listener ->
-                            listener.onPauseMusic()
+                    PlaybackState.STATE_STOPPED -> listeners.forEach { listener ->
+                        listener.onStateChanged(
+                            MusicState.Stopped()
+                        )
+                    }
+
+                    PlaybackState.STATE_PAUSED -> listeners.forEach { listener ->
+                        listener.onStateChanged(
+                            MusicState.Paused(
+                                songPosition = Pair(
+                                    exoPlayer.currentPosition.toInt(),
+                                    exoPlayer.duration.toInt()
+                                )
+                            )
+                        )
+                    }
+
+                    PlaybackState.STATE_ERROR -> {
+                        listeners.forEach { listener ->
+                            listener.onStateChanged(MusicState.ErrorOnLoad(errorMessage = exoPlayer.playerError.toString()))
                         }
                     }
 
-                    else -> {
-                        progressUpdateHandler = null
+                    PlaybackState.STATE_BUFFERING, PlaybackState.STATE_CONNECTING -> listeners.forEach { listener ->
+                        listener.onStateChanged(
+                            MusicState.Loading()
+                        )
                     }
+
+
                 }
                 updateNotification()
                 super.onPlaybackStateChanged(playbackState)
             }
         })
+
         exoPlayer.prepare()
         exoPlayer.playWhenReady = true
     }
@@ -197,7 +265,7 @@ class MusicService : MediaSessionService() {
     }
 
     override fun onDestroy() {
-        progressListeners.forEach { removeProgressListener(it) }
+        listeners.forEach { removeProgressListener(it) }
         mediaSession.run {
             player.release()
             release()
@@ -206,11 +274,11 @@ class MusicService : MediaSessionService() {
     }
 
     fun addProgressListener(listener: MusicServiceListener) {
-        progressListeners.add(listener)
+        listeners.add(listener)
     }
 
     private fun removeProgressListener(listener: MusicServiceListener) {
-        progressListeners.remove(listener)
+        listeners.remove(listener)
     }
 
     override fun onBind(intent: Intent?): IBinder {
@@ -240,8 +308,9 @@ class MusicService : MediaSessionService() {
                 override fun onLoadCleared(placeholder: Drawable?) = Unit
             })
         }
-        val notificationBackgroundColor = albumBitmap?.let { Palette.from(it).generate().vibrantSwatch?.rgb }
-            ?: getColor(R.color.primaryColorLightTheme)
+        val notificationBackgroundColor =
+            albumBitmap?.let { Palette.from(it).generate().vibrantSwatch?.rgb }
+                ?: getColor(R.color.primaryColorLightTheme)
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 

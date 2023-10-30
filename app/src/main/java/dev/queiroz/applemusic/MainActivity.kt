@@ -10,20 +10,23 @@ import android.os.IBinder
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import com.bumptech.glide.Glide
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import dagger.hilt.android.AndroidEntryPoint
 import dev.queiroz.applemusic.databinding.ActivityMainBinding
 import dev.queiroz.applemusic.exoplayer.MusicService
-import dev.queiroz.applemusic.ui.home.HomeFragment
-import dev.queiroz.applemusic.ui.search.SearchFragment
 import dev.queiroz.applemusic.ui.viewmodel.AppleMusicViewModel
+import dev.queiroz.applemusic.ui.viewmodel.MusicState
 import dev.queiroz.applemusic.utils.MediaItemUtils
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -46,9 +49,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var navController: NavController
 
-    private val homeFragment = HomeFragment()
-    private val searchFragment = SearchFragment()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -67,7 +67,9 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(binding.root)
         setupBottomNavigation()
-        setupObservers()
+        lifecycleScope.launch {
+            setupObservers()
+        }
         setupListeners()
         navController = findNavController(R.id.nav_host_fragment)
     }
@@ -79,52 +81,113 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
-        binding.bottomNavigation.setOnNavigationItemSelectedListener { item ->
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.menuListenNow -> setCurrentFragment(fragment = homeFragment)
-                R.id.menuSearch -> setCurrentFragment(fragment = searchFragment)
+                R.id.menuListenNow -> navController.navigate(R.id.homeFragment)
+                R.id.menuSearch -> navController.navigate(R.id.searchFragment)
             }
             true
         }
     }
 
-    private fun setCurrentFragment(fragment: Fragment) =
-        supportFragmentManager.beginTransaction().apply {
-            replace(R.id.nav_host_fragment, fragment)
-            commit()
-        }
-
-    private fun setupObservers() {
+    private suspend fun setupObservers() {
         val floatingMiniPlayerImageView = findViewById<ImageView>(R.id.floatingMiniPlayerImageView)
         val floatingMiniPlayerSongName = findViewById<TextView>(R.id.floatingMiniPlayerSongName)
         val floatingMiniPlayerPlayButton =
             findViewById<ImageView>(R.id.floatingMiniPlayerPlayButton)
+        val floatingMiniPlayerLoadingIndicator =
+            findViewById<LinearProgressIndicator>(R.id.floatingMiniPlayerLoadingIndicator)
 
-        with(appleMusicViewModel) {
-            currentSong.observe(this@MainActivity) {
-                musicService?.getPlayer()
-                    ?.setMediaItem(MediaItemUtils.mediaItemFromSong(it))
+        appleMusicViewModel.currentSong.collectLatest { musicState ->
+            when (musicState) {
+                is MusicState.Selected -> {
+                    val song = musicState.song!!
+                    Glide
+                        .with(this@MainActivity)
+                        .load(song.albumImageUrl)
+                        .into(floatingMiniPlayerImageView)
+                    floatingMiniPlayerSongName.text = song.trackName
+                    floatingMiniPlayerPlayButton.setImageResource(R.drawable.ic_play)
+                    floatingMiniPlayerPlayButton.setOnClickListener { appleMusicViewModel.playMusic(song = song)}
+                }
 
-                //Floating miniplayer
-                Glide
-                    .with(this@MainActivity)
-                    .load(it.albumImageUrl)
-                    .into(floatingMiniPlayerImageView)
-                floatingMiniPlayerSongName.text = it.trackName
+                is MusicState.Loading -> {
+                    floatingMiniPlayerLoadingIndicator.show()
+                    Toast.makeText(
+                        this@MainActivity,
+                        getString(R.string.loading),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    val song = musicState.song!!
+                    Glide
+                        .with(this@MainActivity)
+                        .load(song.albumImageUrl)
+                        .into(floatingMiniPlayerImageView)
+                    floatingMiniPlayerSongName.text = getString(R.string.loading)
+                    floatingMiniPlayerPlayButton.setImageResource(R.drawable.ic_pause)
+                    floatingMiniPlayerPlayButton.setOnClickListener { null }
+                    musicService?.getPlayer()?.clearMediaItems()
+                    musicService?.getPlayer()
+                        ?.setMediaItem(MediaItemUtils.mediaItemFromSong(song = song))
+                    musicService?.getPlayer()?.prepare()
+                }
 
-            }
+                is MusicState.Loaded -> {
+                    floatingMiniPlayerLoadingIndicator.hide()
+                    floatingMiniPlayerPlayButton.setOnClickListener { musicService?.pause() }
+                    floatingMiniPlayerPlayButton.setImageResource(R.drawable.ic_pause)
+                }
 
-            isSongPlaying.observe(this@MainActivity) { isSongPlaying ->
-                floatingMiniPlayerPlayButton.setImageResource(if (isSongPlaying) R.drawable.ic_pause else R.drawable.ic_play)
-                floatingMiniPlayerPlayButton.setOnClickListener {
-                    if (isSongPlaying) {
-                        musicService?.pause()
-                    } else {
-                        musicService?.play()
+                is MusicState.Playing -> {
+                    floatingMiniPlayerLoadingIndicator.hide()
+                    floatingMiniPlayerPlayButton.setOnClickListener { musicService?.pause() }
+                    floatingMiniPlayerPlayButton.setImageResource(R.drawable.ic_pause)
+                    floatingMiniPlayerSongName.text = musicState.song!!.trackName
+                }
+
+                is MusicState.Stopped -> {
+                    floatingMiniPlayerPlayButton.setImageResource(R.drawable.ic_play)
+                    floatingMiniPlayerSongName.text = musicState.song!!.trackName
+                    floatingMiniPlayerLoadingIndicator.hide()
+                    floatingMiniPlayerPlayButton.setOnClickListener {
+                        appleMusicViewModel.playMusic(
+                            musicState.song!!
+                        )
                     }
                 }
+
+                is MusicState.OnPause -> {
+                    musicService?.pause()
+                }
+
+                is MusicState.OnUnpause -> {
+                    musicService?.play()
+                }
+
+                is MusicState.Paused -> {
+                    floatingMiniPlayerPlayButton.setImageResource(R.drawable.ic_play)
+                    floatingMiniPlayerSongName.text = musicState.song!!.trackName
+                    floatingMiniPlayerLoadingIndicator.hide()
+                    floatingMiniPlayerPlayButton.setOnClickListener { musicService?.play() }
+                }
+
+                is MusicState.ErrorOnLoad -> {
+                    val song = musicState.song!!
+                    Toast.makeText(this@MainActivity, musicState.errorMessage, Toast.LENGTH_LONG)
+                        .show()
+                    Glide
+                        .with(this@MainActivity)
+                        .load(song.albumImageUrl)
+                        .into(floatingMiniPlayerImageView)
+                    floatingMiniPlayerLoadingIndicator.hide()
+                    floatingMiniPlayerSongName.text = song.trackName
+                    floatingMiniPlayerPlayButton.setImageResource(R.drawable.ic_play)
+                    floatingMiniPlayerPlayButton.setOnClickListener { appleMusicViewModel.playMusic(song = song)}
+                }
+
             }
         }
+
     }
 
     private fun setupListeners() {
@@ -146,12 +209,12 @@ class MainActivity : AppCompatActivity() {
 
         floatingMiniPlayerPlayButton.setOnClickListener {
             appleMusicViewModel.currentSong.value.let {
-                appleMusicViewModel.playMusic(it!!)
+                appleMusicViewModel.playMusic(it.song!!)
             }
         }
 
         floatingMiniPlayerImageView.setOnClickListener {
-            navController?.navigate(R.id.playerFragment)
+            navController.navigate(R.id.playerFragment)
         }
 
     }
