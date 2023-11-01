@@ -10,18 +10,33 @@ This project is a simple clone of the Apple Music app for Android. It uses the M
 - **Custom Backgrounds**: Enjoy a visually pleasing player screen with custom background colors based on album artwork.
 
 ## Screenshots
-![Screenshot 1](/screenshots/Screenshot_20231101_142230.png=x600)
-![Screenshot 2](/screenshots/Screenshot_20231101_142215.png)
-![Screenshot_3](/screenshots/Screenshot_20231101_142055.png)
-![Screenshot_4](/screenshots/Screenshot_20231101_142127.png)
+<table>
+  <tr>
+    <td><img src="/screenshots/Screenshot_20231101_142230.png" width="300" /></td>
+    <td><img src="/screenshots/Screenshot_20231101_142215.png" width="300" /></td>
+    <td><img src="/screenshots/Screenshot_20231101_142055.png" width="300" /></td>
+    <td><img src="/screenshots/Screenshot_20231101_142127.png" width="300" /></td>
+  </tr>
+</table>
+ 
 
-## Player with custom background
-![Screenshot 5](/screenshots/Screenshot_20231101_142329.png)
-![Screenshot 6](/screenshots/Screenshot_20231101_142652.png)
-![Screenshot_7](/screenshots/Screenshot_20231101_142414.png)
-![Screenshot_8](/screenshots/Screenshot_20231101_142309.png)
-![Screenshot_9](/screenshots/Screenshot_20231101_142703.png)
-![Screenshot_10](/screenshots/Screenshot_20231101_142357.png)
+## Player with dynamic background color
+<table>
+  <tr>
+    <td><img src="/screenshots/Screenshot_20231101_142329.png" width="300" /></td>
+    <td><img src="/screenshots/Screenshot_20231101_142652.png" width="300" /></td>
+    <td><img src="/screenshots/Screenshot_20231101_142414.png" width="300" /></td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td><img src="/screenshots/Screenshot_20231101_142309.png" width="300" /></td>
+    <td><img src="/screenshots/Screenshot_20231101_142703.png" width="300" /></td>
+    <td><img src="/screenshots/Screenshot_20231101_142357.png" width="300" /></td>
+  </tr>
+</table>
+ 
 
 ## Installation
 1. Clone the repository to your local machine.
