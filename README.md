@@ -10,7 +10,7 @@ This project is a simple clone of the Apple Music app for Android. It uses the M
 - **Custom Backgrounds**: Enjoy a visually pleasing player screen with custom background colors based on album artwork.
 
 ## Screenshots
-![Screenshot 1](/screenshots/Screenshot_20231101_142230.png)
+![Screenshot 1](/screenshots/Screenshot_20231101_142230.png=x600)
 ![Screenshot 2](/screenshots/Screenshot_20231101_142215.png)
 ![Screenshot_3](/screenshots/Screenshot_20231101_142055.png)
 ![Screenshot_4](/screenshots/Screenshot_20231101_142127.png)
