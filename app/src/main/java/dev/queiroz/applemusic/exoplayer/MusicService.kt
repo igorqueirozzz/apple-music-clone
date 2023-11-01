@@ -103,7 +103,8 @@ class MusicService : MediaSessionService() {
             override fun onIsPlayingChanged(isPlaying: Boolean) {
                 super.onIsPlayingChanged(isPlaying)
                 val duration = exoPlayer.duration.toInt()
-                val position = exoPlayer.currentPosition.toInt()
+                val position =
+                    if (exoPlayer.currentPosition < 0) 0 else exoPlayer.currentPosition.toInt()
                 playPauseMusicAction = when (isPlaying) {
                     true -> {
                         listeners.forEach {
@@ -150,7 +151,8 @@ class MusicService : MediaSessionService() {
                 when (playbackState) {
                     PlaybackState.STATE_PLAYING -> {
                         val finalPosition = exoPlayer.duration.toInt()
-                        val position = exoPlayer.currentPosition.toInt()
+                        val position =
+                            if (exoPlayer.currentPosition < 0) 0 else exoPlayer.currentPosition.toInt()
                         listeners.forEach { listener ->
                             listener.onStateChanged(
                                 MusicState.Playing(
@@ -173,10 +175,12 @@ class MusicService : MediaSessionService() {
                     }
 
                     PlaybackState.STATE_PAUSED -> listeners.forEach { listener ->
+                        val currentPosition =
+                            if (exoPlayer.currentPosition < 0) 0 else exoPlayer.currentPosition.toInt()
                         listener.onStateChanged(
                             MusicState.Paused(
                                 songPosition = Pair(
-                                    exoPlayer.currentPosition.toInt(),
+                                    currentPosition,
                                     exoPlayer.duration.toInt()
                                 )
                             )
